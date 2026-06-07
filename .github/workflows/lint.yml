@@ -12,7 +12,7 @@ jobs:
   lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: actions/checkout@v6
+      - uses: DeterminateSystems/nix-installer-action@v22
       - name: Run linters
         run: nix flake check -L
