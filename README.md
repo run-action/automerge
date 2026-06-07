@@ -50,6 +50,26 @@ jobs:
 
 See [`examples/automerge.yml`](examples/automerge.yml).
 
+### Pinning (recommended)
+
+It's recommended pin to a full commit SHA rather than a moving tag like `@v1`.
+
+```yaml
+- uses: run-action/automerge@<full-commit-sha> # v1.0.0
+```
+
+Let Dependabot keep the pin fresh by watching this action in the consuming repo:
+
+```yaml
+# .github/dependabot.yml
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+```
+
 ## Inputs
 
 | Input           | Default               | Description                                                   |
