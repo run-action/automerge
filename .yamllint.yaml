@@ -1,0 +1,14 @@
+extends: default
+
+rules:
+  # GitHub Actions files use `on:` which yamllint flags as the boolean `True`.
+  truthy:
+    allowed-values: ["true", "false"]
+    check-keys: false
+  # Descriptions and jq filters run long; don't fight them.
+  line-length:
+    max: 120
+    allow-non-breakable-words: true
+  document-start: disable
+  comments:
+    min-spaces-from-content: 1

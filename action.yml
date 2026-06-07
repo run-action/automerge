@@ -1,0 +1,23 @@
+name: Dependabot auto-merge
+description: >-
+  Squash-merge open Dependabot PRs once they are at least `cooldown-days` old
+  and every check has passed. The cooldown gives a window for a yanked or
+  malicious release to be caught before it lands on the default branch.
+
+inputs:
+  cooldown-days:
+    description: "Days a Dependabot PR must age before it is eligible to merge."
+    default: "3"
+  github-token:
+    description: "Token used to query and merge PRs. Defaults to the job token."
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - name: Enable auto-merge for eligible Dependabot PRs
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        COOLDOWN_DAYS: ${{ inputs.cooldown-days }}
+      run: "$GITHUB_ACTION_PATH/scripts/automerge.sh"

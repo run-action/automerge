@@ -1,0 +1,24 @@
+version: 2
+
+multi-ecosystem-groups:
+  dependencies:
+    commit-message:
+      prefix: "deps:"
+    schedule:
+      interval: "monthly"
+      day: "monday"
+      time: "07:38"
+      timezone: "UTC"
+
+updates:
+  - package-ecosystem: "nix"
+    directory: "/"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "dependencies"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    patterns:
+      - "*"
+    multi-ecosystem-group: "dependencies"

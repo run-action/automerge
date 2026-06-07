@@ -1,7 +1,6 @@
 # automerge
 
-A composite GitHub Action that squash-merges aged, fully-green Dependabot
-PRs
+A composite GitHub Action that squash-merges aged, fully-green Dependabot PRs.
 
 ## What it does
 
@@ -60,6 +59,24 @@ See [`examples/automerge.yml`](examples/automerge.yml).
 
 - **"Allow auto-merge" must be enabled** in the consuming repo's settings
   (Settings → General → Pull Requests). Without it, `gh pr merge --auto` errors.
+  Enable it from the CLI with:
+
+  ```sh
+  gh repo edit <owner>/<repo> --enable-auto-merge
+  ```
 - The calling job must grant `contents: write` and `pull-requests: write`, as in
   the example above. An action runs with the permissions of its calling job.
+
+## Development
+
+The merge logic lives in [`scripts/automerge.sh`](scripts/automerge.sh); the
+composite action just sets env and invokes it.
+
+Linting is driven by [`flake.nix`](flake.nix). It pulls the tools and runs every
+check:
+
+```sh
+nix flake check -L       # shellcheck, actionlint, yamllint, nixfmt
+nix develop              # drop into a shell with all four available
+```
 
