@@ -1,6 +1,8 @@
 # automerge
 
-A composite GitHub Action that squash-merges aged, fully-green Dependabot PRs.
+A composite GitHub Action for **delayed** Dependabot auto-merge: it
+squash-merges Dependabot PRs only after they have aged past a cooldown and
+every check is green.
 
 ## What it does
 
@@ -50,10 +52,10 @@ See [`examples/automerge.yml`](examples/automerge.yml).
 
 ## Inputs
 
-| Input           | Default              | Description                                                    |
-| --------------- | -------------------- | ------------------------------------------------------------- |
-| `cooldown-days` | `3`                  | Days a Dependabot PR must age before it is eligible to merge. |
-| `github-token`  | `${{ github.token }}`| Token used to query and merge PRs.                            |
+| Input           | Default               | Description                                                   |
+| --------------- | --------------------- | ------------------------------------------------------------- |
+| `cooldown-days` | `3`                   | Days a Dependabot PR must age before it is eligible to merge. |
+| `github-token`  | `${{ github.token }}` | Token used to query and merge PRs.                            |
 
 ## Prerequisites
 
@@ -79,4 +81,3 @@ check:
 nix flake check -L       # shellcheck, actionlint, yamllint, nixfmt
 nix develop              # drop into a shell with all four available
 ```
-
