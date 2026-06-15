@@ -8,6 +8,8 @@ every check is green.
 
 On each run it finds open Dependabot PRs that are **all** of:
 
+- **not carrying a skip label** — by default any PR labelled `no-auto-merge` is
+  left for human review (configurable via `skip-labels`),
 - **mergeable** (`mergeable == MERGEABLE`),
 - **older than `cooldown-days`** — a window for a yanked or malicious release to
   be caught before it lands,
@@ -72,10 +74,11 @@ updates:
 
 ## Inputs
 
-| Input           | Default               | Description                                                   |
-| --------------- | --------------------- | ------------------------------------------------------------- |
-| `cooldown-days` | `3`                   | Days a Dependabot PR must age before it is eligible to merge. |
-| `github-token`  | `${{ github.token }}` | Token used to query and merge PRs.                            |
+| Input           | Default               | Description                                                                                             |
+| --------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
+| `cooldown-days` | `3`                   | Days a Dependabot PR must age before it is eligible to merge.                                           |
+| `skip-labels`   | `no-auto-merge`       | Comma-separated labels that exclude a PR from auto-merge. Set to `""` to disable label-based exclusion. |
+| `github-token`  | `${{ github.token }}` | Token used to query and merge PRs.                                                                      |
 
 ## Prerequisites
 
@@ -93,11 +96,14 @@ updates:
 
 The merge logic lives in [`scripts/automerge.sh`](scripts/automerge.sh); the
 composite action just sets env and invokes it.
+The PR eligibility filter is in [`scripts/select-prs.jq`](scripts/select-prs.jq)
+so it can be tested independently.
 
-Linting is driven by [`flake.nix`](flake.nix). It pulls the tools and runs every
-check:
+Linting and tests are driven by [`flake.nix`](flake.nix). It pulls the tools and
+runs every check:
 
 ```sh
-nix flake check -L       # shellcheck, actionlint, yamllint, nixfmt
-nix develop              # drop into a shell with all four available
+nix flake check -L       # shellcheck, actionlint, yamllint, nixfmt, bats tests
+nix develop              # drop into a shell with all tools available
+bats tests/              # run just the tests
 ```

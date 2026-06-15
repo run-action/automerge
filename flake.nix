@@ -15,13 +15,15 @@
       forAllSystems = nixpkgs.lib.genAttrs systems;
       pkgsFor = system: nixpkgs.legacyPackages.${system};
 
-      # Linters shared by the dev shell and `nix flake check`.
+      # Linters and test tools shared by the dev shell and `nix flake check`.
       tools =
         pkgs: with pkgs; [
           shellcheck
           actionlint
           yamllint
           nixfmt
+          bats
+          jq
         ];
     in
     {
@@ -34,8 +36,8 @@
           default = pkgs.mkShell {
             packages = tools pkgs;
             shellHook = ''
-              echo "Lint shell ready: shellcheck, actionlint, yamllint, nixfmt"
-              echo "Run all checks with: nix flake check -L"
+              echo "Dev shell ready: shellcheck, actionlint, yamllint, nixfmt, bats, jq"
+              echo "Run all checks with: nix flake check -L  (or just: bats tests/)"
             '';
           };
         }
@@ -73,6 +75,10 @@
 
           nixfmt = run "nixfmt" [ pkgs.nixfmt ] ''
             nixfmt --check flake.nix
+          '';
+
+          tests = run "tests" [ pkgs.bats pkgs.jq ] ''
+            bats tests/
           '';
         }
       );

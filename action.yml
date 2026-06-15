@@ -8,6 +8,12 @@ inputs:
   cooldown-days:
     description: "Days a Dependabot PR must age before it is eligible to merge."
     default: "3"
+  skip-labels:
+    description: >-
+      Comma-separated label names that exclude a PR from auto-merge. A PR
+      carrying any of these is left untouched for human review. Defaults to
+      "no-auto-merge"; set to "" to disable label-based exclusion.
+    default: "no-auto-merge"
   github-token:
     description: "Token used to query and merge PRs. Defaults to the job token."
     default: ${{ github.token }}
@@ -20,4 +26,5 @@ runs:
       env:
         GH_TOKEN: ${{ inputs.github-token }}
         COOLDOWN_DAYS: ${{ inputs.cooldown-days }}
+        SKIP_LABELS: ${{ inputs.skip-labels }}
       run: "$GITHUB_ACTION_PATH/scripts/automerge.sh"

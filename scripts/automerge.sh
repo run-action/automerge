@@ -6,32 +6,28 @@
 # Required environment:
 #   GH_TOKEN          Token used by `gh` to query and merge PRs.
 #   COOLDOWN_DAYS     Days a PR must age before it is eligible.
+#   SKIP_LABELS       Comma-separated labels that exclude a PR (optional, may
+#                     be unset/empty).
 #   GITHUB_REPOSITORY owner/name of the repo (set by the Actions runner).
 set -eu -o pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 COOLDOWN_CUTOFF="$(date -u -d "${COOLDOWN_DAYS} days ago" +%s)"
 export COOLDOWN_CUTOFF
+# Default to empty so the filter is a no-op (no exclusions) when unset.
+export SKIP_LABELS="${SKIP_LABELS:-}"
 
-# The jq filter intentionally uses single quotes: $cutoff/$s are jq variables
-# shellcheck disable=SC2016
+# The eligibility filter lives in select-prs.jq so it can be unit-tested against
+# fixtures without GitHub (see tests/). gh's --jq reads COOLDOWN_CUTOFF and
+# SKIP_LABELS from the environment exported above.
 prs_json="$(
   gh pr list \
     --repo "$GITHUB_REPOSITORY" \
     --author "app/dependabot" \
     --state open \
-    --json number,createdAt,commits,mergeable,statusCheckRollup \
-    --jq '
-      (env.COOLDOWN_CUTOFF | tonumber) as $cutoff
-      | .[]
-      | select(.mergeable == "MERGEABLE")
-      | select((.createdAt | fromdateiso8601) <= $cutoff)
-      | select((.commits[-1].committedDate | fromdateiso8601) <= $cutoff)
-      | select((.statusCheckRollup | length) > 0)
-      | select(all(.statusCheckRollup[];
-          (.conclusion // .state) as $s
-          | $s == "SUCCESS" or $s == "NEUTRAL" or $s == "SKIPPED"))
-      | .number
-    '
+    --json number,createdAt,commits,mergeable,statusCheckRollup,labels \
+    --jq "$(cat "$SCRIPT_DIR/select-prs.jq")"
 )"
 mapfile -t prs < <(printf '%s' "$prs_json")
 
