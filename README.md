@@ -14,9 +14,12 @@ On each run it finds open Dependabot PRs that are **all** of:
 - **older than `cooldown-days`** — a window for a yanked or malicious release to
   be caught before it lands,
 - carry **at least one check**, with **every check green** (`SUCCESS`,
-  `NEUTRAL`, or `SKIPPED`),
+  `NEUTRAL`, or `SKIPPED`) — relax the "at least one check" part with
+  `require-checks: false`,
 
-and enables auto-merge (`--auto --squash --delete-branch`) on each.
+and squash-merges each (`--squash --delete-branch`). Every PR that is skipped is
+logged with the reason (`::notice::`), so a run that merges nothing still
+explains why instead of looking like it found nothing.
 
 ## Usage
 
@@ -74,23 +77,30 @@ updates:
 
 ## Inputs
 
-| Input           | Default               | Description                                                                                             |
-| --------------- | --------------------- | ------------------------------------------------------------------------------------------------------- |
-| `cooldown-days` | `3`                   | Days a Dependabot PR must age before it is eligible to merge.                                           |
-| `skip-labels`   | `no-auto-merge`       | Comma-separated labels that exclude a PR from auto-merge. Set to `""` to disable label-based exclusion. |
-| `github-token`  | `${{ github.token }}` | Token used to query and merge PRs.                                                                      |
+| Input           | Default             | Description                                                                                             |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
+| `cooldown-days` | `3`                 | Days a Dependabot PR must age before it is eligible to merge.                                           |
+| `skip-labels`   | `no-auto-merge`     | Comma-separated labels that exclude a PR from auto-merge. Set to `""` to disable label-based exclusion. |
+| `require-checks`| `true`              | Require at least one check. Set to `false` to merge PRs with no checks, relying solely on the cooldown. |
+| `github-token`  | `${{github.token}}` | Token used to query and merge PRs.                                                                      |
 
 ## Prerequisites
 
-- **"Allow auto-merge" must be enabled** in the consuming repo's settings
-  (Settings → General → Pull Requests). Without it, `gh pr merge --auto` errors.
-  Enable it from the CLI with:
-
-  ```sh
-  gh repo edit <owner>/<repo> --enable-auto-merge
-  ```
 - The calling job must grant `contents: write` and `pull-requests: write`, as in
   the example above. An action runs with the permissions of its calling job.
+
+The action merges directly (`gh pr merge --squash`) once it has confirmed a PR
+is mergeable, aged, and green.
+
+## `require-checks` and the cooldown
+
+By default a PR must have at least one check before it can merge. Setting
+`require-checks: false` lets PRs with **no** checks through — useful for repos
+whose CI doesn't run on Dependabot PRs (e.g. workflows triggered only by
+`workflow_dispatch`). The trade-off: an empty check rollup means *nothing*
+validated the change, so eligibility then rests **entirely** on the cooldown
+window catching a yanked or malicious release. Pick a cooldown you're
+comfortable relying on alone before enabling this.
 
 ## Development
 

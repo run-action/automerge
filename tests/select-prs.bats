@@ -12,10 +12,14 @@ FILTER="scripts/select-prs.jq"
 FIXTURE="tests/fixtures/prs.json"
 export COOLDOWN_CUTOFF=1685577600
 
-# Run the filter and join the surviving PR numbers with commas, so assertions
-# read as a single stable string regardless of jq's line output.
+# The filter emits one "<number>\tELIGIBLE|SKIP\t<reason>" record per PR. The
+# helpers below pull the field under test out of that so assertions read as a
+# single stable string.
+
+# Comma-joined numbers of the ELIGIBLE PRs.
 run_filter() {
-  SKIP_LABELS="$1" jq -r -f "$FILTER" "$FIXTURE" | paste -sd, -
+  SKIP_LABELS="$1" jq -r -f "$FILTER" "$FIXTURE" \
+    | awk -F'\t' '$2 == "ELIGIBLE" { print $1 }' | paste -sd, -
 }
 
 # Same, but against an inline JSON document instead of the shared fixture. Used
@@ -24,7 +28,16 @@ run_filter() {
 # to the production default so these focus on the property under test.
 run_filter_json() {
   local json="$1"
-  SKIP_LABELS="${2:-no-auto-merge}" jq -r -f "$FILTER" <<<"$json" | paste -sd, -
+  SKIP_LABELS="${2:-no-auto-merge}" jq -r -f "$FILTER" <<<"$json" \
+    | awk -F'\t' '$2 == "ELIGIBLE" { print $1 }' | paste -sd, -
+}
+
+# The SKIP reason reported for a single-PR inline document. SKIP_LABELS defaults
+# to the production default.
+reason_for_json() {
+  local json="$1"
+  SKIP_LABELS="${2:-no-auto-merge}" jq -r -f "$FILTER" <<<"$json" \
+    | awk -F'\t' '{ print $3 }'
 }
 
 # A single green, aged, mergeable PR with one passing check. Tests tweak one
@@ -138,4 +151,67 @@ JSON
   run run_filter_json "[]"
   [ "$status" -eq 0 ]
   [ "$output" = "" ]
+}
+
+# --- skip reasons -----------------------------------------------------------
+
+@test "skip reason names the matched skip label" {
+  json="$(pr | jq -c '.[0].labels = [{"name": "no-auto-merge"}] | .')"
+  run reason_for_json "$json"
+  [ "$status" -eq 0 ]
+  [ "$output" = "carries skip label: no-auto-merge" ]
+}
+
+@test "skip reason reports the mergeable state for a conflicting PR" {
+  json="$(pr | jq -c '.[0].mergeable = "CONFLICTING" | .')"
+  run reason_for_json "$json"
+  [ "$status" -eq 0 ]
+  [ "$output" = "not mergeable (mergeable=CONFLICTING)" ]
+}
+
+@test "skip reason explains a too-fresh open date" {
+  json="$(pr | jq -c '.[0].createdAt = "2023-06-02T00:00:00Z" | .')"
+  run reason_for_json "$json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == "too fresh: opened 2023-06-02T00:00:00Z"* ]]
+}
+
+@test "skip reason names the non-green checks" {
+  json="$(pr | jq -c '.[0].statusCheckRollup = [{"name": "build", "conclusion": "FAILURE"}, {"name": "lint", "conclusion": "PENDING"}, {"name": "test", "conclusion": "SUCCESS"}] | .')"
+  run reason_for_json "$json"
+  [ "$status" -eq 0 ]
+  [ "$output" = "checks not green: build, lint" ]
+}
+
+@test "an eligible PR has an empty reason" {
+  run reason_for_json "$(pr)"
+  [ "$status" -eq 0 ]
+  [ "$output" = "" ]
+}
+
+# --- require-checks ---------------------------------------------------------
+
+@test "with REQUIRE_CHECKS unset, a PR with no checks is skipped (no checks reason)" {
+  json="$(pr | jq -c '.[0].statusCheckRollup = [] | .')"
+  run reason_for_json "$json"
+  [ "$status" -eq 0 ]
+  [[ "$output" == "no checks have run"* ]]
+}
+
+@test "with REQUIRE_CHECKS=false, a PR with no checks is eligible" {
+  json="$(pr | jq -c '.[0].statusCheckRollup = [] | .')"
+  run env REQUIRE_CHECKS=false bash -c \
+    'SKIP_LABELS=no-auto-merge jq -r -f "$1" <<<"$2" | awk -F"\t" "{ print \$2 }"' \
+    _ "$FILTER" "$json"
+  [ "$status" -eq 0 ]
+  [ "$output" = "ELIGIBLE" ]
+}
+
+@test "REQUIRE_CHECKS=false still rejects a PR whose checks are failing" {
+  json="$(pr | jq -c '.[0].statusCheckRollup = [{"name": "build", "conclusion": "FAILURE"}] | .')"
+  run env REQUIRE_CHECKS=false bash -c \
+    'SKIP_LABELS=no-auto-merge jq -r -f "$1" <<<"$2" | awk -F"\t" "{ print \$3 }"' \
+    _ "$FILTER" "$json"
+  [ "$status" -eq 0 ]
+  [ "$output" = "checks not green: build" ]
 }

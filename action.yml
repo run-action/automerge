@@ -14,6 +14,12 @@ inputs:
       carrying any of these is left untouched for human review. Defaults to
       "no-auto-merge"; set to "" to disable label-based exclusion.
     default: "no-auto-merge"
+  require-checks:
+    description: >-
+      Whether a PR must have at least one check to be eligible. When "true"
+      (the default) a PR with no checks is skipped, since nothing validated it.
+      Set to "false" to merge such PRs anyway, relying solely on the cooldown.
+    default: "true"
   github-token:
     description: "Token used to query and merge PRs. Defaults to the job token."
     default: ${{ github.token }}
@@ -21,10 +27,11 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Enable auto-merge for eligible Dependabot PRs
+    - name: Squash-merge eligible Dependabot PRs
       shell: bash
       env:
         GH_TOKEN: ${{ inputs.github-token }}
         COOLDOWN_DAYS: ${{ inputs.cooldown-days }}
         SKIP_LABELS: ${{ inputs.skip-labels }}
+        REQUIRE_CHECKS: ${{ inputs.require-checks }}
       run: "$GITHUB_ACTION_PATH/scripts/automerge.sh"
