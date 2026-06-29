@@ -47,6 +47,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      checks: read
+      statuses: read
+      actions: read
     steps:
       - uses: run-action/automerge@v1
         with:
@@ -77,17 +80,28 @@ updates:
 
 ## Inputs
 
-| Input           | Default             | Description                                                                                             |
-| --------------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
-| `cooldown-days` | `3`                 | Days a Dependabot PR must age before it is eligible to merge.                                           |
-| `skip-labels`   | `no-auto-merge`     | Comma-separated labels that exclude a PR from auto-merge. Set to `""` to disable label-based exclusion. |
-| `require-checks`| `true`              | Require at least one check. Set to `false` to merge PRs with no checks, relying solely on the cooldown. |
-| `github-token`  | `${{github.token}}` | Token used to query and merge PRs.                                                                      |
+| Input            | Default             | Description                                                                                             |
+| ---------------- | ------------------- | ------------------------------------------------------------------------------------------------------- |
+| `cooldown-days`  | `3`                 | Days a Dependabot PR must age before it is eligible to merge.                                           |
+| `skip-labels`    | `no-auto-merge`     | Comma-separated labels that exclude a PR from auto-merge. Set to `""` to disable label-based exclusion. |
+| `require-checks` | `true`              | Require at least one check. Set to `false` to merge PRs with no checks, relying solely on the cooldown. |
+| `github-token`   | `${{github.token}}` | Token used to query and merge PRs.                                                                      |
 
 ## Prerequisites
 
-- The calling job must grant `contents: write` and `pull-requests: write`, as in
-  the example above. An action runs with the permissions of its calling job.
+The calling job must grant all five of these scopes:
+
+| Scope                  | Why                                                                 |
+| ---------------------- | ------------------------------------------------------------------- |
+| `contents: write`      | Merge the PR.                                                       |
+| `pull-requests: write` | Enable auto-merge and delete the branch.                            |
+| `checks: read`         | Read each PR's `statusCheckRollup` to confirm every check is green. |
+| `statuses: read`       | Same rollup, used to confirm checks are green.                      |
+| `actions: read`        | Same rollup, needed to read check runs from Actions workflow runs.  |
+
+A `permissions:` block defaults any unlisted scope to `none`, so all five must
+be named explicitly. Omitting the read scopes fails with
+`Resource not accessible by integration (statusCheckRollup)`.
 
 The action merges directly (`gh pr merge --squash`) once it has confirmed a PR
 is mergeable, aged, and green.
@@ -97,7 +111,7 @@ is mergeable, aged, and green.
 By default a PR must have at least one check before it can merge. Setting
 `require-checks: false` lets PRs with **no** checks through — useful for repos
 whose CI doesn't run on Dependabot PRs (e.g. workflows triggered only by
-`workflow_dispatch`). The trade-off: an empty check rollup means *nothing*
+`workflow_dispatch`). The trade-off: an empty check rollup means _nothing_
 validated the change, so eligibility then rests **entirely** on the cooldown
 window catching a yanked or malicious release. Pick a cooldown you're
 comfortable relying on alone before enabling this.

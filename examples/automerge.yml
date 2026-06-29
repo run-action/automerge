@@ -18,6 +18,9 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+      checks: read
+      statuses: read
+      actions: read
     steps:
       - uses: run-action/automerge@v1
         with:
