@@ -1,8 +1,8 @@
 # automerge
 
-A composite GitHub Action for **delayed** Dependabot auto-merge: it
-squash-merges Dependabot PRs only after they have aged past a cooldown and
-every check is green.
+A composite GitHub Action, **Gated automerge**, for delayed Dependabot
+PR squash-merges: it merges Dependabot PRs only after they have aged past a
+cooldown and every check is green.
 
 ## What it does
 
@@ -28,7 +28,7 @@ the cooldown:
 
 ```yaml
 # .github/workflows/automerge.yml
-name: Dependabot auto-merge
+name: Gated automerge
 
 on:
   schedule:

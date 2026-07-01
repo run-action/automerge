@@ -1,5 +1,5 @@
 # Drop this into a consuming repo at .github/workflows/automerge.yml
-name: Dependabot auto-merge
+name: Gated automerge
 
 on:
   schedule:

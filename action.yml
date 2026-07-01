@@ -1,8 +1,12 @@
-name: Dependabot auto-merge
+name: Gated automerge
 description: >-
   Squash-merge open Dependabot PRs once they are at least `cooldown-days` old
   and every check has passed. The cooldown gives a window for a yanked or
   malicious release to be caught before it lands on the default branch.
+
+branding:
+  icon: git-merge
+  color: green
 
 inputs:
   cooldown-days:
