@@ -15,7 +15,7 @@ set -eu -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-COOLDOWN_CUTOFF="$(date -u -d "${COOLDOWN_DAYS} days ago" +%s)"
+COOLDOWN_CUTOFF="$(($(date +%s) - COOLDOWN_DAYS * 86400))"
 export COOLDOWN_CUTOFF
 # Default to empty so the filter is a no-op (no exclusions) when unset.
 export SKIP_LABELS="${SKIP_LABELS:-}"
@@ -31,6 +31,7 @@ classified="$(
     --repo "$GITHUB_REPOSITORY" \
     --author "app/dependabot" \
     --state open \
+    --limit 100 \
     --json number,createdAt,commits,mergeable,statusCheckRollup,labels \
     --jq "$(cat "$SCRIPT_DIR/select-prs.jq")"
 )"
