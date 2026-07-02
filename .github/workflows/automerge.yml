@@ -1,4 +1,4 @@
-name: Dependabot auto-merge
+name: Gated automerge
 
 on:
   schedule:
