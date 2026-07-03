@@ -2,15 +2,15 @@
 # why when not.
 #
 # Input: the JSON array from `gh pr list --json
-# number,createdAt,commits,mergeable,statusCheckRollup,labels`.
+# number,createdAt,updatedAt,mergeable,statusCheckRollup,labels`.
 # Output: one tab-separated record per PR, in input order:
 #   <number>\t<ELIGIBLE|SKIP>\t<reason>
 # `reason` is empty for ELIGIBLE rows, otherwise a human-readable explanation of
 # the first failing condition (conditions are checked in a fixed order).
 #
 # A PR qualifies when it carries none of the skip labels, is mergeable, has aged
-# past the cooldown (both when it was opened and its last commit), and every
-# check is green. Reads three environment variables:
+# past the cooldown (both when opened and its last activity), and every check is
+# green. Reads three environment variables:
 #   COOLDOWN_CUTOFF  unix seconds; PRs newer than this are too fresh to merge.
 #   SKIP_LABELS      comma-separated label names to exclude (may be empty).
 #   REQUIRE_CHECKS   "false" to allow an empty check rollup; otherwise require >=1.
@@ -37,8 +37,8 @@ def check_name: .name // .context // "unnamed";
      "not mergeable (mergeable=" + (.mergeable // "null") + ")"
    elif (.createdAt | fromdateiso8601) > $cutoff then
      "too fresh: opened " + .createdAt + ", still within cooldown"
-   elif (.commits[-1].committedDate | fromdateiso8601) > $cutoff then
-     "too fresh: last commit " + .commits[-1].committedDate + ", still within cooldown"
+   elif (.updatedAt | fromdateiso8601) > $cutoff then
+     "too fresh: last activity " + .updatedAt + ", still within cooldown"
    elif $require_checks and (.statusCheckRollup | length) == 0 then
      "no checks have run (set require-checks: false to merge without checks)"
    elif ($bad_checks | length) > 0 then

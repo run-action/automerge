@@ -5,7 +5,7 @@
 #
 # The fixture cutoff is 2023-06-01T00:00:00Z (1685577600). Relative to it the
 # fixtures cover: green+aged+clean (1,3), the skip label (2), too-fresh by
-# open date (4) and by last commit (5), a failing check (6), no checks (7),
+# open date (4) and by last activity (5), a failing check (6), no checks (7),
 # NEUTRAL/SKIPPED/state-fallback green (8), and not-mergeable (9).
 
 FILTER="scripts/select-prs.jq"
@@ -41,14 +41,14 @@ reason_for_json() {
 }
 
 # A single green, aged, mergeable PR with one passing check. Tests tweak one
-# field to isolate the branch they exercise. createdAt/committedDate sit exactly
+# field to isolate the branch they exercise. createdAt/updatedAt sit exactly
 # at the cutoff (2023-06-01T00:00:00Z == 1685577600) so the <= boundary holds.
 pr() {
   cat <<JSON
 [{
   "number": 10,
   "createdAt": "2023-06-01T00:00:00Z",
-  "commits": [{"committedDate": "2023-06-01T00:00:00Z"}],
+  "updatedAt": "2023-06-01T00:00:00Z",
   "mergeable": "MERGEABLE",
   "statusCheckRollup": [{"conclusion": "SUCCESS"}],
   "labels": []
@@ -79,7 +79,7 @@ JSON
   [[ "$output" != *"4"* ]]
 }
 
-@test "a PR whose last commit is too fresh (#5) is excluded" {
+@test "a PR whose last activity is too fresh (#5) is excluded" {
   run run_filter "no-auto-merge"
   [[ "$output" != *"5"* ]]
 }
@@ -112,8 +112,8 @@ JSON
   [ "$output" = "" ]
 }
 
-@test "one second past the cutoff (last commit) is too fresh and excluded" {
-  json="$(pr | jq -c '.[0].commits[-1].committedDate = "2023-06-01T00:00:01Z" | .')"
+@test "one second past the cutoff (last activity) is too fresh and excluded" {
+  json="$(pr | jq -c '.[0].updatedAt = "2023-06-01T00:00:01Z" | .')"
   run run_filter_json "$json"
   [ "$status" -eq 0 ]
   [ "$output" = "" ]
