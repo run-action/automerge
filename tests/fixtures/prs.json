@@ -2,7 +2,7 @@
   {
     "number": 1,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "SUCCESS"}],
     "labels": [{"name": "dependencies"}]
@@ -10,7 +10,7 @@
   {
     "number": 2,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "SUCCESS"}],
     "labels": [{"name": "dependencies"}, {"name": "no-auto-merge"}]
@@ -18,7 +18,7 @@
   {
     "number": 3,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "SUCCESS"}],
     "labels": []
@@ -26,7 +26,7 @@
   {
     "number": 4,
     "createdAt": "2024-06-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "SUCCESS"}],
     "labels": []
@@ -34,7 +34,7 @@
   {
     "number": 5,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2024-06-01T00:00:00Z"}],
+    "updatedAt": "2024-06-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "SUCCESS"}],
     "labels": []
@@ -42,7 +42,7 @@
   {
     "number": 6,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "FAILURE"}, {"conclusion": "SUCCESS"}],
     "labels": []
@@ -50,7 +50,7 @@
   {
     "number": 7,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [],
     "labels": []
@@ -58,7 +58,7 @@
   {
     "number": 8,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "MERGEABLE",
     "statusCheckRollup": [{"conclusion": "NEUTRAL"}, {"conclusion": "SKIPPED"}, {"state": "SUCCESS"}],
     "labels": [{"name": "wip"}]
@@ -66,7 +66,7 @@
   {
     "number": 9,
     "createdAt": "2023-01-01T00:00:00Z",
-    "commits": [{"committedDate": "2023-01-01T00:00:00Z"}],
+    "updatedAt": "2023-01-01T00:00:00Z",
     "mergeable": "CONFLICTING",
     "statusCheckRollup": [{"conclusion": "SUCCESS"}],
     "labels": []

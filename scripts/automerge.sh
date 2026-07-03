@@ -26,13 +26,17 @@ export REQUIRE_CHECKS="${REQUIRE_CHECKS:-true}"
 # against fixtures without GitHub (see tests/). It emits one tab-separated record
 # per open Dependabot PR: <number>\t<ELIGIBLE|SKIP>\t<reason>. gh's --jq reads
 # COOLDOWN_CUTOFF, SKIP_LABELS and REQUIRE_CHECKS from the environment above.
+#
+# updatedAt stands in for the last-commit date: every push bumps it, so it can
+# only delay a merge, never allow one early. Fetching commits instead would pull
+# each commit's authors and blow GitHub's 500k GraphQL node limit.
 classified="$(
   gh pr list \
     --repo "$GITHUB_REPOSITORY" \
     --author "app/dependabot" \
     --state open \
     --limit 100 \
-    --json number,createdAt,commits,mergeable,statusCheckRollup,labels \
+    --json number,createdAt,updatedAt,mergeable,statusCheckRollup,labels \
     --jq "$(cat "$SCRIPT_DIR/select-prs.jq")"
 )"
 
