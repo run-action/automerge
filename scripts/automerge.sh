@@ -10,6 +10,8 @@
 #                     be unset/empty).
 #   REQUIRE_CHECKS    "false" to merge PRs that have no checks at all (optional,
 #                     defaults to "true").
+#   AUTO_MERGE        "true" to enable GitHub auto-merge instead of merging
+#                     directly (optional, defaults to "false").
 #   GITHUB_REPOSITORY owner/name of the repo (set by the Actions runner).
 set -eu -o pipefail
 
@@ -21,6 +23,8 @@ export COOLDOWN_CUTOFF
 export SKIP_LABELS="${SKIP_LABELS:-}"
 # Default to requiring checks; only "false" relaxes the empty-rollup guard.
 export REQUIRE_CHECKS="${REQUIRE_CHECKS:-true}"
+# Default to merging directly; only "true" defers to GitHub's auto-merge queue.
+AUTO_MERGE="${AUTO_MERGE:-false}"
 
 # The classification filter lives in select-prs.jq so it can be unit-tested
 # against fixtures without GitHub (see tests/). It emits one tab-separated record
@@ -57,12 +61,23 @@ while IFS=$'\t' read -r number status reason; do
   total=$((total + 1))
   if [ "$status" = "ELIGIBLE" ]; then
     eligible=$((eligible + 1))
-    # The filter has already confirmed the PR is mergeable, aged, and green, so
-    # merge directly rather than handing it to GitHub's auto-merge queue (which
-    # needs a pending requirement to wait on and the repo's "Allow auto-merge"
-    # setting; both are absent on repos without required checks).
-    echo "::notice::Merging PR #${number}"
-    if ! gh pr merge "$number" --repo "$GITHUB_REPOSITORY" --squash --delete-branch; then
+    if [ "$AUTO_MERGE" = "true" ]; then
+      # Defer to GitHub's auto-merge queue so requirements that changed after
+      # classification (a re-triggered check, a ruleset gate) still block the
+      # merge. Needs the repo's "Allow auto-merge" setting and a ruleset with
+      # at least one requirement. No --delete-branch: the merge happens later,
+      # so cleanup falls to the repo's "Automatically delete head branches".
+      echo "::notice::Enabling auto-merge for PR #${number}"
+      merge_flags=(--auto --squash)
+    else
+      # The filter has already confirmed the PR is mergeable, aged, and green,
+      # so merge directly rather than handing it to GitHub's auto-merge queue
+      # (which needs a pending requirement to wait on and the repo's "Allow
+      # auto-merge" setting; both are absent on repos without required checks).
+      echo "::notice::Merging PR #${number}"
+      merge_flags=(--squash --delete-branch)
+    fi
+    if ! gh pr merge "$number" --repo "$GITHUB_REPOSITORY" "${merge_flags[@]}"; then
       echo "::error::Could not merge PR #${number} in $GITHUB_REPOSITORY."
       failed=1
     fi
