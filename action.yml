@@ -21,6 +21,14 @@ inputs:
       (the default) a PR with no checks is skipped, since nothing validated it.
       Set to "false" to merge such PRs anyway, relying solely on the cooldown.
     default: "true"
+  auto-merge:
+    description: >-
+      When "true", enable GitHub auto-merge (gh pr merge --auto) instead of
+      merging directly, so requirements that change between the eligibility
+      check and the merge are still enforced by GitHub. Needs the repo's
+      "Allow auto-merge" setting and a ruleset or branch protection with at
+      least one requirement; without those, keep the default direct merge.
+    default: "false"
   github-token:
     description: "Token used to query and merge PRs. Defaults to the job token."
     default: ${{ github.token }}
@@ -35,4 +43,5 @@ runs:
         COOLDOWN_DAYS: ${{ inputs.cooldown-days }}
         SKIP_LABELS: ${{ inputs.skip-labels }}
         REQUIRE_CHECKS: ${{ inputs.require-checks }}
+        AUTO_MERGE: ${{ inputs.auto-merge }}
       run: "$GITHUB_ACTION_PATH/scripts/automerge.sh"

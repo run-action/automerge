@@ -41,6 +41,7 @@ Pin to a full commit SHA rather than a moving tag. See
 | `cooldown-days`  | `3`                 | Days a Dependabot PR must age before it is eligible to merge.                                           |
 | `skip-labels`    | `no-auto-merge`     | Comma-separated labels that exclude a PR from auto-merge. Set to `""` to disable label-based exclusion. |
 | `require-checks` | `true`              | Require at least one check. Set to `false` to merge PRs with no checks, relying solely on the cooldown. |
+| `auto-merge`     | `false`             | Enable GitHub auto-merge (`--auto`) instead of merging directly. Requires the repo's "Allow auto-merge" setting and a ruleset with at least one requirement; branch cleanup then follows the repo's "Automatically delete head branches" setting. |
 | `github-token`   | `${{github.token}}` | Token used to query and merge PRs.                                                                      |
 
 ## Prerequisites

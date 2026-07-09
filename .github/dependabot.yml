@@ -16,9 +16,13 @@ updates:
     patterns:
       - "*"
     multi-ecosystem-group: "dependencies"
+    cooldown:
+      default-days: 3
 
   - package-ecosystem: "github-actions"
     directory: "/"
     patterns:
       - "*"
     multi-ecosystem-group: "dependencies"
+    cooldown:
+      default-days: 3
