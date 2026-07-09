@@ -26,12 +26,13 @@ jobs:
       statuses: read
       actions: read
     steps:
-      - uses: run-action/automerge@<full-commit-sha> # v1
+      - uses: run-action/automerge@46cd9d2f9e469f68f91b6c22e2a13f673ccac593 # v1.2.3
         with:
           cooldown-days: 3
 ```
 
-Pin to a full commit SHA rather than a moving tag. See
+Releases are immutable semver tags only — there is no floating `v1` major
+tag. Pin to a full commit SHA and let Dependabot bump it. See
 [`examples/automerge.yml`](examples/automerge.yml).
 
 ## Inputs
