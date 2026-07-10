@@ -1,0 +1,57 @@
+# Repository settings, synced by run-action/gh-settings
+# (https://github.com/run-action/gh-settings). Written by
+# `gh-settings init` as a recommended secure baseline; review and adjust.
+
+repository:
+  settings: "Gated automerge - delayed merge open dependabot PRs"
+  topics:
+    - automation
+    - composite-action
+    - dependabot
+    - github-actions
+  private: false
+  delete_branch_on_merge: true
+  allow_squash_merge: true
+  allow_merge_commit: false
+  enable_vulnerability_alerts: true
+  enable_automated_security_fixes: true
+  enable_secret_scanning: true
+  enable_secret_scanning_push_protection: true
+  enable_private_vulnerability_reporting: true
+  enable_immutable_releases: true
+
+# Extra "Update a repository" API fields that are NOT part of the de facto
+# probot/settings schema. gh-settings merges them over repository:;
+# probot/settings ignores this section.
+repository_extra:
+  allow_auto_merge: true
+  allow_update_branch: true
+
+# Default GITHUB_TOKEN permissions for workflows; mirrors the "Set default
+# workflow permissions for a repository" API
+# (https://docs.github.com/en/rest/actions/permissions#set-default-workflow-permissions-for-a-repository).
+# probot/settings ignores this section.
+actions:
+  default_workflow_permissions: read
+  can_approve_pull_request_reviews: false
+
+# labels:
+#   - name: bug
+#     color: B60205
+#     description: Something is not working
+
+# Branch/tag rulesets mirror the "Create/update a repository ruleset" API
+# shape (https://docs.github.com/en/rest/repos/rules#create-a-repository-ruleset),
+# matched and updated by name. Rulesets removed from this list are NOT
+# deleted from the repo.
+rulesets:
+  - name: default branch protection
+    target: branch
+    enforcement: active
+    conditions:
+      ref_name:
+        include: ["~DEFAULT_BRANCH"]
+        exclude: []
+    rules:
+      - type: deletion
+      - type: non_fast_forward
