@@ -22,6 +22,6 @@ jobs:
       statuses: read
       actions: read
     steps:
-      - uses: run-action/automerge@v1
+      - uses: run-action/automerge@46cd9d2f9e469f68f91b6c22e2a13f673ccac593 # v1.2.3
         with:
           cooldown-days: 3
